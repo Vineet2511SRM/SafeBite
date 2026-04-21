@@ -4,6 +4,7 @@
   "description": "SafeBite Food Quality Inspection Backend",
   "main": "server.js",
   "scripts": {
+    "build:frontend": "npm --prefix ../frontend run build",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },

@@ -40,12 +40,34 @@ A comprehensive web application for managing food quality inspections, manufactu
 2. Run the SQL script in `database/SafeBite.sql` to create tables and insert sample data
 3. Update the database credentials in `backend/config/db.js` if needed
 
+### Frontend Build
+
+1. Navigate to the backend directory:
+
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Build the frontend:
+
+   ```bash
+   npm run build
+   ```
+
+   This creates the `frontend/build` folder that the backend serves.
+
 ### Backend Setup
 
 1. Navigate to the backend directory:
 
    ```bash
-   cd backend
+   cd ../backend
    ```
 
 2. Install dependencies:
@@ -60,29 +82,7 @@ A comprehensive web application for managing food quality inspections, manufactu
    npm start
    ```
 
-   The server will run on <http://localhost:5000>
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-
-   ```bash
-   npm start
-   ```
-
-   The app will open at <http://localhost:3000>
+   The website and API will both run on <http://localhost:3000>
 
 ## API Endpoints
 
@@ -135,7 +135,7 @@ A comprehensive web application for managing food quality inspections, manufactu
 
 ## Usage
 
-1. Start both backend and frontend servers
+1. Build the frontend and start the backend server
 2. Open <http://localhost:3000> in your browser
 3. Login with any username (no password required for demo)
 4. Navigate through different sections using the sidebar
