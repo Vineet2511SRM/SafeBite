@@ -10,10 +10,10 @@ const Manufacturer = {
         return rows[0];
     },
     create: async (data) => {
-        const { manufacturer_id, first_name, last_name, license_number, street, city, state, pincode, registration_date } = data;
+        const { first_name, last_name, license_number, street, city, state, pincode, registration_date } = data;
         const [result] = await db.query(
-            'INSERT INTO Food_Manufacturer (manufacturer_id, first_name, last_name, license_number, street, city, state, pincode, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [manufacturer_id, first_name, last_name, license_number, street, city, state, pincode, registration_date]
+            'INSERT INTO Food_Manufacturer (first_name, last_name, license_number, street, city, state, pincode, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [first_name, last_name, license_number, street, city, state, pincode, registration_date]
         );
         return result;
     },
@@ -26,6 +26,7 @@ const Manufacturer = {
         return result;
     },
     delete: async (id) => {
+        // Leverages ON DELETE CASCADE for Products, Contacts, Batches, Inspections, etc.
         const [result] = await db.query('DELETE FROM Food_Manufacturer WHERE manufacturer_id = ?', [id]);
         return result;
     }

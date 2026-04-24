@@ -19,10 +19,10 @@ const Complaint = {
         return rows;
     },
     create: async (data) => {
-        const { complaint_id, consumer_id, product_id, complaint_date, complaint_type, status } = data;
+        const { consumer_id, product_id, complaint_date, complaint_type, status } = data;
         const [result] = await db.query(
-            'INSERT INTO Complaint (complaint_id, consumer_id, product_id, complaint_date, complaint_type, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [complaint_id, consumer_id, product_id, complaint_date, complaint_type, status]
+            'INSERT INTO Complaint (consumer_id, product_id, complaint_date, complaint_type, status) VALUES (?, ?, ?, ?, ?)',
+            [consumer_id, product_id, complaint_date, complaint_type, status]
         );
         return result;
     },
@@ -35,6 +35,7 @@ const Complaint = {
         return result;
     },
     delete: async (id) => {
+        // Leverages ON DELETE CASCADE for Enforcement_Action records natively in the DB
         const [result] = await db.query('DELETE FROM Complaint WHERE complaint_id = ?', [id]);
         return result;
     }

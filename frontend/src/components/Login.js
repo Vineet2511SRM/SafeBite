@@ -56,7 +56,7 @@ const Login = ({ onLogin, onBack }) => {
                         <div className="login-role-label">Choose your workspace</div>
                         <div className="login-role-cards">
                             {roles.map(role => (
-                                <div 
+                                <div
                                     key={role.id}
                                     className={`login-role-card ${selectedRole === role.id ? 'selected' : ''}`}
                                     onClick={() => setSelectedRole(role.id)}
@@ -71,8 +71,8 @@ const Login = ({ onLogin, onBack }) => {
 
                     <div className="login-form-group">
                         <label className="login-form-label">Username</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             className="login-form-input"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -92,9 +92,9 @@ const Login = ({ onLogin, onBack }) => {
                             {loading ? 'Authenticating...' : 'Sign In'}
                         </button>
                     </div>
-                    
-                    <button 
-                        type="button" 
+
+                    <button
+                        type="button"
                         onClick={onBack}
                         style={{ width: '100%', padding: '16px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '8px', fontSize: '13px', fontWeight: 600, transition: 'color 0.2s' }}
                         onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
@@ -112,7 +112,7 @@ const Login = ({ onLogin, onBack }) => {
                     <div className="login-right-desc">
                         Rigorous safety standards and automated compliance checking. SafeBite ensures quality from farm to fork.
                     </div>
-                    
+
                     <div className="login-right-features">
                         <div className="login-right-feature"><div className="login-right-feature-dot"></div> 100% Traceability</div>
                         <div className="login-right-feature"><div className="login-right-feature-dot"></div> Role-Based Access</div>

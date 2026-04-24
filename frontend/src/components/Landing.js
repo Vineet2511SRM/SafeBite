@@ -1,6 +1,7 @@
 import React from 'react';
+import ThemeToggle from './ThemeToggle';
 
-const Landing = ({ onNavigateToLogin }) => {
+const Landing = ({ onNavigateToLogin, theme, onToggleTheme }) => {
     return (
         <div className="landing-page">
             <nav className="landing-nav">
@@ -8,7 +9,10 @@ const Landing = ({ onNavigateToLogin }) => {
                     <div className="landing-logo-icon">SB</div>
                     <div className="landing-logo-text">Safe<span>Bite</span></div>
                 </div>
-                <button className="landing-nav-btn" onClick={onNavigateToLogin}>Get Started</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <ThemeToggle theme={theme} onToggle={onToggleTheme} iconOnly />
+                    <button className="landing-nav-btn" onClick={onNavigateToLogin}>Get Started</button>
+                </div>
             </nav>
 
             <main className="landing-hero">
@@ -24,8 +28,7 @@ const Landing = ({ onNavigateToLogin }) => {
                     </h1>
 
                     <p className="landing-subtitle">
-                        Enterprise-grade inspection and compliance management.
-                        Monitor manufacturers, track lifecycles, and enforce critical safety standards.
+                        Enterprise-grade inspection and compliance management. Monitor manufacturers, track product lifecycles, and enforce critical safety standards with confidence.
                     </p>
 
                     <div className="landing-cta-group">

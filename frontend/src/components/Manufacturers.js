@@ -11,27 +11,66 @@ const Manufacturers = ({ user }) => {
     const perms = getPermissions(user?.role, 'manufacturers');
     const [formData, setFormData] = useState({
         manufacturer_id: '', first_name: '', last_name: '', license_number: '',
-        street: '', city: '', state: '', pincode: '', registration_date: ''
+        street: '', city: '', state: '', pincode: '', registration_date: '', contacts: []
     });
+    const [newContact, setNewContact] = useState('');
+    const resetFormData = () => ({
+        manufacturer_id: '',
+        first_name: '',
+        last_name: '',
+        license_number: '',
+        street: '',
+        city: '',
+        state: '',
+        pincode: '',
+        registration_date: '',
+        contacts: []
+    });
+    const normalizeItems = (items) => [...new Set(items.map((item) => item.trim()).filter(Boolean))];
 
     useEffect(() => { fetchData(); }, []);
 
     const showToast = (type, message) => { setToast({ type, message }); setTimeout(() => setToast(null), 3000); };
 
     const fetchData = async () => {
-        try { const r = await api.get('/manufacturers'); setData(r.data); }
-        catch (e) { console.error(e); } finally { setLoading(false); }
+        try {
+            const r = await api.get('/manufacturers');
+            const manufacturersWithContacts = await Promise.all(r.data.map(async (m) => {
+                try {
+                    const contactsRes = await api.get(`/manufacturer-contacts/${m.manufacturer_id}/contacts`);
+                    return { ...m, contacts: contactsRes.data.map(c => c.contact_number) };
+                } catch {
+                    return { ...m, contacts: [] };
+                }
+            }));
+            setData(manufacturersWithContacts);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             if (editing) {
-                await api.put(`/manufacturers/${editing.manufacturer_id}`, formData);
-                showToast('success', 'Manufacturer updated');
+                await api.put(`/manufacturers/${editing.manufacturer_id}`, { ...formData, contacts: undefined });
+                const existing = await api.get(`/manufacturer-contacts/${editing.manufacturer_id}/contacts`);
+                for (const c of existing.data) {
+                    await api.delete(`/manufacturer-contacts/${editing.manufacturer_id}/contacts/${encodeURIComponent(c.contact_number)}`);
+                }
+                for (const contact of normalizeItems(formData.contacts)) {
+                    await api.post('/manufacturer-contacts/contacts', { manufacturer_id: editing.manufacturer_id, contact_number: contact });
+                }
+                showToast('success', 'Manufacturer record updated successfully');
             } else {
-                await api.post('/manufacturers', formData);
-                showToast('success', 'Manufacturer added');
+                const result = await api.post('/manufacturers', { ...formData, manufacturer_id: undefined });
+                const newId = result.data.id;
+                for (const contact of normalizeItems(formData.contacts)) {
+                    await api.post('/manufacturer-contacts/contacts', { manufacturer_id: newId, contact_number: contact });
+                }
+                showToast('success', 'Manufacturer record inserted successfully');
             }
             fetchData(); handleCancel();
         } catch (e) { showToast('error', e.response?.data?.message || 'Operation failed'); }
@@ -39,21 +78,33 @@ const Manufacturers = ({ user }) => {
 
     const handleEdit = (item) => {
         setEditing(item);
-        setFormData({ ...item, registration_date: item.registration_date?.split('T')[0] || '' });
+        setFormData({ ...item, registration_date: item.registration_date?.split('T')[0] || '', contacts: item.contacts || [] });
         setShowForm(true);
     };
 
     const handleDelete = async (id) => {
         if (window.confirm('Delete this manufacturer?')) {
-            try { await api.delete(`/manufacturers/${id}`); showToast('success', 'Deleted'); fetchData(); }
+            try { await api.delete(`/manufacturers/${id}`); showToast('success', 'Manufacturer record deleted successfully'); fetchData(); }
             catch (e) { showToast('error', e.response?.data?.message || 'Delete failed'); }
         }
     };
 
     const handleCancel = () => {
         setShowForm(false); setEditing(null);
-        setFormData({ manufacturer_id: '', first_name: '', last_name: '', license_number: '',
-            street: '', city: '', state: '', pincode: '', registration_date: '' });
+        setFormData(resetFormData());
+        setNewContact('');
+    };
+
+    const addContact = () => {
+        const contact = newContact.trim();
+        if (contact) {
+            setFormData({ ...formData, contacts: normalizeItems([...formData.contacts, contact]) });
+            setNewContact('');
+        }
+    };
+
+    const removeContact = (index) => {
+        setFormData({ ...formData, contacts: formData.contacts.filter((_, i) => i !== index) });
     };
 
     return (
@@ -95,7 +146,7 @@ const Manufacturers = ({ user }) => {
                             </div>
                         ) : (
                             <table className="premium-table">
-                                <thead><tr><th>ID</th><th>Name</th><th>License No.</th><th>Location</th><th>Pincode</th><th>Reg. Date</th>{(perms.update || perms.delete) && <th>Actions</th>}</tr></thead>
+                                <thead><tr><th>ID</th><th>Name</th><th>License No.</th><th>Location</th><th>Pincode</th><th>Contact Numbers</th><th>Reg. Date</th>{(perms.update || perms.delete) && <th>Actions</th>}</tr></thead>
                                 <tbody>
                                     {data.map((m, i) => (
                                         <tr key={m.manufacturer_id} className="anim-fadeInUp" style={{ animationDelay: `${i * 0.02}s` }}>
@@ -114,6 +165,7 @@ const Manufacturers = ({ user }) => {
                                             <td><code style={{ background: 'var(--bg)', padding: '3px 6px', borderRadius: '4px', fontSize: '11px' }}>{m.license_number}</code></td>
                                             <td>{m.city}, {m.state}</td>
                                             <td>{m.pincode}</td>
+                                            <td>{m.contacts ? m.contacts.join(', ') : 'None'}</td>
                                             <td>{m.registration_date?.split('T')[0]}</td>
                                             {(perms.update || perms.delete) && (
                                                 <td>
@@ -140,7 +192,7 @@ const Manufacturers = ({ user }) => {
                         <form onSubmit={handleSubmit}>
                             <div className="modal-body">
                                 <div className="form-row">
-                                    <div className="form-group"><label className="form-label">Manufacturer ID</label><input className="form-input" type="number" required disabled={!!editing} value={formData.manufacturer_id} onChange={(e) => setFormData({ ...formData, manufacturer_id: e.target.value })} /></div>
+                                    <div className="form-group"><label className="form-label">Manufacturer ID</label><input className="form-input" type="text" disabled value={editing ? formData.manufacturer_id : 'Auto-generated'} readOnly /></div>
                                     <div className="form-group"><label className="form-label">License Number</label><input className="form-input" type="text" required value={formData.license_number} onChange={(e) => setFormData({ ...formData, license_number: e.target.value })} /></div>
                                 </div>
                                 <div className="form-row">
@@ -155,6 +207,20 @@ const Manufacturers = ({ user }) => {
                                 <div className="form-row">
                                     <div className="form-group"><label className="form-label">Pincode</label><input className="form-input" type="text" required value={formData.pincode} onChange={(e) => setFormData({ ...formData, pincode: e.target.value })} /></div>
                                     <div className="form-group"><label className="form-label">Registration Date</label><input className="form-input" type="date" required value={formData.registration_date} onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })} /></div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Contact Numbers</label>
+                                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                        <input className="form-input" type="text" value={newContact} onChange={(e) => setNewContact(e.target.value)} placeholder="Add contact number" />
+                                        <button type="button" className="btn btn-secondary" onClick={addContact}>Add</button>
+                                    </div>
+                                    <div>
+                                        {formData.contacts.map((contact, index) => (
+                                            <span key={index} style={{ display: 'inline-block', background: 'var(--bg)', padding: '4px 8px', margin: '2px', borderRadius: '4px' }}>
+                                                {contact} <button type="button" onClick={() => removeContact(index)} style={{ marginLeft: '4px', color: 'red' }}>×</button>
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                             <div className="modal-footer">

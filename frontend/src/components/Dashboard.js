@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
+import PageHeader from './PageHeader';
+import { ErrorState, LoadingState } from './DataState';
 
 const Dashboard = ({ user }) => {
     const [stats, setStats] = useState({});
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => { fetchStats(); }, []);
 
@@ -11,34 +15,74 @@ const Dashboard = ({ user }) => {
         try {
             const r = await api.get('/dashboard/stats');
             setStats(r.data);
-        } catch (error) { console.error(error); }
+            setError('');
+        } catch (error) {
+            console.error(error);
+            setError(error.response?.data?.message || 'Dashboard statistics are temporarily unavailable.');
+        }
         finally { setLoading(false); }
     };
 
+    const safeStats = {
+        totalManufacturers: Number(stats.totalManufacturers) || 0,
+        totalProducts: Number(stats.totalProducts) || 0,
+        totalInspections: Number(stats.totalInspections) || 0,
+        totalComplaints: Number(stats.totalComplaints) || 0,
+        totalRecalls: Number(stats.totalRecalls) || 0,
+        totalViolations: Number(stats.totalViolations) || 0,
+    };
+
     const cards = [
-        { label: 'Total Manufacturers', value: stats.totalManufacturers || 0, abbr: 'MF', color: 'teal' },
-        { label: 'Total Products', value: stats.totalProducts || 0, abbr: 'PR', color: 'green' },
-        { label: 'Total Inspections', value: stats.totalInspections || 0, abbr: 'IS', color: 'blue' },
-        { label: 'Total Complaints', value: stats.totalComplaints || 0, abbr: 'CP', color: 'amber' },
-        { label: 'Active Recalls', value: stats.totalRecalls || 0, abbr: 'RC', color: 'red' },
-        { label: 'Total Violations', value: stats.totalViolations || 0, abbr: 'VL', color: 'red' },
+        { label: 'Manufacturers', value: safeStats.totalManufacturers, abbr: 'MF', color: 'teal', note: 'Registered partners' },
+        { label: 'Products', value: safeStats.totalProducts, abbr: 'PR', color: 'green', note: 'Tracked items' },
+        { label: 'Inspections', value: safeStats.totalInspections, abbr: 'IS', color: 'blue', note: 'Safety audits' },
+        { label: 'Complaints', value: safeStats.totalComplaints, abbr: 'CP', color: 'amber', note: 'Consumer reports' },
+        { label: 'Active Recalls', value: safeStats.totalRecalls, abbr: 'RC', color: 'red', note: 'Live alerts' },
+        { label: 'Violations', value: safeStats.totalViolations, abbr: 'VL', color: 'red', note: 'Safety breaches' },
+    ];
+
+    const totalOperationalRecords = safeStats.totalManufacturers + safeStats.totalProducts + safeStats.totalInspections + safeStats.totalComplaints;
+    const complaintPressure = safeStats.totalProducts > 0
+        ? `${Math.round((safeStats.totalComplaints / safeStats.totalProducts) * 100)}%`
+        : '0%';
+    const inspectionCoverage = safeStats.totalProducts > 0
+        ? `${Math.round((safeStats.totalInspections / safeStats.totalProducts) * 100)}%`
+        : '0%';
+
+    const insightTiles = [
+        {
+            title: 'Operational Footprint',
+            value: totalOperationalRecords,
+            description: 'Combined records across manufacturers, products, inspections, and complaints.',
+        },
+        {
+            title: 'Complaint Pressure',
+            value: complaintPressure,
+            description: 'Complaints relative to tracked products for a quick health pulse.',
+        },
+        {
+            title: 'Inspection Coverage',
+            value: inspectionCoverage,
+            description: 'Inspection count compared to product count for oversight visibility.',
+        },
+    ];
+
+    const actionTiles = [
+        { label: 'Review Manufacturers', path: '/manufacturers', hint: 'Verify registrations and contact data.' },
+        { label: 'Track Products', path: '/products', hint: 'Check certifications, categories, and status.' },
+        { label: 'Plan Inspections', path: '/inspections', hint: 'Handle schedules and inspection outcomes.' },
+        { label: 'Resolve Complaints', path: '/complaints', hint: 'Monitor consumer issues and status changes.' },
     ];
 
     if (loading) {
         return (
             <div className="main-content">
-                <div className="main-header">
-                    <div className="main-header-row">
-                        <div>
-                            <div className="main-header-title">Dashboard</div>
-                            <div className="main-header-subtitle">Loading...</div>
-                        </div>
-                    </div>
-                </div>
+                <PageHeader title="Dashboard" subtitle="Loading your compliance overview..." />
                 <div className="main-body">
                     <div className="stats-grid">
-                        {[1,2,3,4,5,6].map((i) => <div key={i} className="skeleton skeleton-card"></div>)}
+                        {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="skeleton skeleton-card"></div>)}
                     </div>
+                    <LoadingState label="Preparing dashboard cards and insights..." />
                 </div>
             </div>
         );
@@ -46,22 +90,37 @@ const Dashboard = ({ user }) => {
 
     return (
         <div className="main-content">
-            <div className="main-header">
-                <div className="main-header-row">
-                    <div>
-                        <div className="main-header-title">Welcome back, {user?.username || 'User'}</div>
-                        <div className="main-header-subtitle">Food safety compliance overview</div>
-                    </div>
-                    <div className="main-header-actions">
-                        <span className="badge badge-teal" style={{ fontSize: '12px', padding: '6px 14px' }}>
-                            <span className="badge-dot"></span>
-                            {user?.role || 'Inspector'}
-                        </span>
-                    </div>
-                </div>
-            </div>
+            <PageHeader
+                title={`Welcome back, ${user?.username || 'User'}`}
+                subtitle="Food safety compliance overview across operations, products, and incident response."
+                actions={(
+                    <span className="badge badge-teal badge-lg">
+                        <span className="badge-dot"></span>
+                        {user?.role || 'Inspector'}
+                    </span>
+                )}
+            />
 
             <div className="main-body">
+                {error ? <ErrorState message={error} /> : null}
+
+                <div className="dashboard-hero anim-fadeInUp">
+                    <div className="dashboard-hero-copy">
+                        <div className="section-eyebrow">Control Center</div>
+                        <h2 className="dashboard-hero-title">Keep manufacturers, products, inspections, and complaints in one reliable workflow.</h2>
+                        <p className="dashboard-hero-text">
+                            This dashboard highlights the most important movement in the system so teams can spot pressure, act quickly, and keep data quality high.
+                        </p>
+                    </div>
+                    <div className="dashboard-hero-panel">
+                        <div className="metric-stack">
+                            <span className="metric-stack-label">Current risk flags</span>
+                            <span className="metric-stack-value">{safeStats.totalRecalls + safeStats.totalViolations}</span>
+                            <span className="metric-stack-note">Active recalls plus recorded violations</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="stats-grid">
                     {cards.map((c, i) => (
                         <div key={c.label} className={`stat-card ${c.color} anim-fadeInUp`} style={{ animationDelay: `${i * 0.06}s` }}>
@@ -70,28 +129,26 @@ const Dashboard = ({ user }) => {
                             </div>
                             <div className="stat-card-number">{c.value}</div>
                             <div className="stat-card-label">{c.label}</div>
+                            <div className="stat-card-note">{c.note}</div>
                         </div>
                     ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="dashboard-grid">
                     <div className="content-card anim-fadeInUp" style={{ animationDelay: '0.35s' }}>
                         <div className="content-card-header">
                             <div className="content-card-title">System Overview</div>
                         </div>
-                        <div style={{ padding: '20px' }}>
+                        <div className="overview-list">
                             {[
-                                { label: 'Manufacturers Registered', value: stats.totalManufacturers || 0, color: 'var(--primary)' },
-                                { label: 'Products Tracked', value: stats.totalProducts || 0, color: 'var(--success)' },
-                                { label: 'Inspections Completed', value: stats.totalInspections || 0, color: 'var(--info)' },
-                                { label: 'Complaints Received', value: stats.totalComplaints || 0, color: 'var(--warning)' },
+                                { label: 'Manufacturers Registered', value: safeStats.totalManufacturers, color: 'var(--primary)' },
+                                { label: 'Products Tracked', value: safeStats.totalProducts, color: 'var(--success)' },
+                                { label: 'Inspections Completed', value: safeStats.totalInspections, color: 'var(--info)' },
+                                { label: 'Complaints Received', value: safeStats.totalComplaints, color: 'var(--warning)' },
                             ].map((item, i) => (
-                                <div key={item.label} style={{
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                    padding: '12px 0', borderBottom: i < 3 ? '1px solid var(--border-light)' : 'none',
-                                }}>
-                                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>{item.label}</span>
-                                    <span style={{ fontSize: '16px', fontWeight: 800, color: item.color }}>{item.value}</span>
+                                <div key={item.label} className={`overview-row ${i < 3 ? 'bordered' : ''}`}>
+                                    <span className="overview-label">{item.label}</span>
+                                    <span className="overview-value" style={{ color: item.color }}>{item.value}</span>
                                 </div>
                             ))}
                         </div>
@@ -101,26 +158,25 @@ const Dashboard = ({ user }) => {
                         <div className="content-card-header">
                             <div className="content-card-title">Quick Actions</div>
                         </div>
-                        <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                            {[
-                                { label: 'Add Manufacturer', path: '/manufacturers', bg: 'var(--primary-ultra-light)', border: 'var(--primary-light)' },
-                                { label: 'Add Product', path: '/products', bg: 'var(--success-light)', border: '#BBF7D0' },
-                                { label: 'New Inspection', path: '/inspections', bg: 'var(--info-light)', border: '#BAE6FD' },
-                                { label: 'Log Complaint', path: '/complaints', bg: 'var(--warning-light)', border: '#FDE68A' },
-                            ].map((a) => (
-                                <a key={a.label} href={a.path} style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    padding: '16px 12px', borderRadius: '10px',
-                                    background: a.bg, border: `1px solid ${a.border}`,
-                                    textDecoration: 'none', transition: 'transform 0.15s ease', cursor: 'pointer',
-                                    fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center',
-                                }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                                   onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-                                    {a.label}
-                                </a>
+                        <div className="quick-actions-grid">
+                            {actionTiles.map((action) => (
+                                <Link key={action.label} to={action.path} className="quick-action-tile">
+                                    <span className="quick-action-label">{action.label}</span>
+                                    <span className="quick-action-hint">{action.hint}</span>
+                                </Link>
                             ))}
                         </div>
                     </div>
+                </div>
+
+                <div className="insight-grid">
+                    {insightTiles.map((tile, index) => (
+                        <div key={tile.title} className="insight-card anim-fadeInUp" style={{ animationDelay: `${0.45 + index * 0.05}s` }}>
+                            <div className="insight-card-title">{tile.title}</div>
+                            <div className="insight-card-value">{tile.value}</div>
+                            <div className="insight-card-text">{tile.description}</div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

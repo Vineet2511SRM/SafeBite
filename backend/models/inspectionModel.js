@@ -24,10 +24,10 @@ const Inspection = {
         return rows;
     },
     create: async (data) => {
-        const { inspection_id, schedule_id, inspection_date, inspection_result, risk_score, remarks } = data;
+        const { schedule_id, inspection_date, inspection_result, risk_score, remarks } = data;
         const [result] = await db.query(
-            'INSERT INTO Inspection (inspection_id, schedule_id, inspection_date, inspection_result, risk_score, remarks) VALUES (?, ?, ?, ?, ?, ?)',
-            [inspection_id, schedule_id, inspection_date, inspection_result, risk_score, remarks]
+            'INSERT INTO Inspection (schedule_id, inspection_date, inspection_result, risk_score, remarks) VALUES (?, ?, ?, ?, ?)',
+            [schedule_id, inspection_date, inspection_result, risk_score, remarks]
         );
         return result;
     },
@@ -40,6 +40,7 @@ const Inspection = {
         return result;
     },
     delete: async (id) => {
+        // Leverages ON DELETE CASCADE for Lab_Test and Sample_Collection
         const [result] = await db.query('DELETE FROM Inspection WHERE inspection_id = ?', [id]);
         return result;
     }

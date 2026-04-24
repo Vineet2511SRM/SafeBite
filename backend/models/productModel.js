@@ -15,10 +15,10 @@ const Product = {
         return rows[0];
     },
     create: async (data) => {
-        const { product_id, product_name, shelf_life, approval_status, manufacturer_id, category_id } = data;
+        const { product_name, shelf_life, approval_status, manufacturer_id, category_id } = data;
         const [result] = await db.query(
-            'INSERT INTO Food_Product (product_id, product_name, shelf_life, approval_status, manufacturer_id, category_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [product_id, product_name, shelf_life, approval_status, manufacturer_id, category_id]
+            'INSERT INTO Food_Product (product_name, shelf_life, approval_status, manufacturer_id, category_id) VALUES (?, ?, ?, ?, ?)',
+            [product_name, shelf_life, approval_status, manufacturer_id, category_id]
         );
         return result;
     },
@@ -31,7 +31,13 @@ const Product = {
         return result;
     },
     delete: async (id) => {
+        // Now leveraging ON DELETE CASCADE - logic simplified significantly
         const [result] = await db.query('DELETE FROM Food_Product WHERE product_id = ?', [id]);
+        return result;
+    },
+    deleteByManufacturer: async (manufacturerId) => {
+        // Leverages database cascading
+        const [result] = await db.query('DELETE FROM Food_Product WHERE manufacturer_id = ?', [manufacturerId]);
         return result;
     }
 };

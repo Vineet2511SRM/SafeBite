@@ -22,6 +22,12 @@ const complianceRoutes = require('./routes/complianceRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const authRoutes = require('./routes/authRoutes');
+const manufacturerContactRoutes = require('./routes/manufacturerContactRoutes');
+const productCertificationRoutes = require('./routes/productCertificationRoutes');
+const categoryStorageGuidelineRoutes = require('./routes/categoryStorageGuidelineRoutes');
+const agencyRoutes = require('./routes/agencyRoutes');
+const agencyContactRoutes = require('./routes/agencyContactRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 app.use('/api/manufacturers', manufacturerRoutes);
 app.use('/api/products', productRoutes);
@@ -30,6 +36,12 @@ app.use('/api/compliance', complianceRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/manufacturer-contacts', manufacturerContactRoutes);
+app.use('/api/product-certifications', productCertificationRoutes);
+app.use('/api/category-guidelines', categoryStorageGuidelineRoutes);
+app.use('/api/agencies', agencyRoutes);
+app.use('/api/agency-contacts', agencyContactRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.use(express.static(frontendBuildPath));
 

@@ -21,8 +21,8 @@ exports.getProductById = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
     try {
-        await Product.create(req.body);
-        res.status(201).json({ id: req.body.product_id, ...req.body });
+        const result = await Product.create(req.body);
+        res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

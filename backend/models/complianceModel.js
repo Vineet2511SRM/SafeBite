@@ -27,10 +27,10 @@ const Compliance = {
         return rows;
     },
     create: async (data) => {
-        const { compliance_id, product_id, batch_id, standard_id, compliance_status, checked_date, violation_count } = data;
+        const { product_id, batch_id, standard_id, compliance_status, checked_date, violation_count } = data;
         const [result] = await db.query(
-            'INSERT INTO Compliance_Record (compliance_id, product_id, batch_id, standard_id, compliance_status, checked_date, violation_count) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [compliance_id, product_id, batch_id, standard_id, compliance_status, checked_date, violation_count]
+            'INSERT INTO Compliance_Record (product_id, batch_id, standard_id, compliance_status, checked_date, violation_count) VALUES (?, ?, ?, ?, ?, ?)',
+            [product_id, batch_id, standard_id, compliance_status, checked_date, violation_count]
         );
         return result;
     },
@@ -43,6 +43,7 @@ const Compliance = {
         return result;
     },
     delete: async (id) => {
+        // Leverages ON DELETE CASCADE for related Enforcement_Action records
         const [result] = await db.query('DELETE FROM Compliance_Record WHERE compliance_id = ?', [id]);
         return result;
     }

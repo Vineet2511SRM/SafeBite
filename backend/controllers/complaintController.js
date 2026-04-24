@@ -30,8 +30,8 @@ exports.getConsumers = async (req, res) => {
 
 exports.createComplaint = async (req, res) => {
     try {
-        await Complaint.create(req.body);
-        res.status(201).json({ id: req.body.complaint_id, ...req.body });
+        const result = await Complaint.create(req.body);
+        res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

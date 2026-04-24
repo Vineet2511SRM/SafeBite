@@ -22,7 +22,7 @@ exports.getManufacturerById = async (req, res) => {
 exports.createManufacturer = async (req, res) => {
     try {
         const result = await Manufacturer.create(req.body);
-        res.status(201).json({ id: req.body.manufacturer_id, ...req.body });
+        res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

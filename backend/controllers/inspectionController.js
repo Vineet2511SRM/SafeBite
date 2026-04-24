@@ -30,8 +30,8 @@ exports.getSchedules = async (req, res) => {
 
 exports.createInspection = async (req, res) => {
     try {
-        await Inspection.create(req.body);
-        res.status(201).json({ id: req.body.inspection_id, ...req.body });
+        const result = await Inspection.create(req.body);
+        res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

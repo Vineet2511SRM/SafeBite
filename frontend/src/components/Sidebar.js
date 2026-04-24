@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle';
 
-const Sidebar = ({ onLogout, user }) => {
+const Sidebar = ({ onLogout, user, isOpen, onClose, theme, onToggleTheme }) => {
     const location = useLocation();
 
     const navSections = [
@@ -15,7 +16,8 @@ const Sidebar = ({ onLogout, user }) => {
             label: 'Core Data',
             items: [
                 { path: '/manufacturers', icon: 'MF', label: 'Manufacturers' },
-                { path: '/products', icon: 'PR', label: 'Products' }
+                { path: '/products', icon: 'PR', label: 'Products' },
+                { path: '/categories', icon: 'CT', label: 'Categories' }
             ]
         },
         {
@@ -23,52 +25,61 @@ const Sidebar = ({ onLogout, user }) => {
             items: [
                 { path: '/inspections', icon: 'IS', label: 'Inspections' },
                 { path: '/compliance', icon: 'CM', label: 'Compliance' },
-                { path: '/complaints', icon: 'CP', label: 'Complaints' }
+                { path: '/complaints', icon: 'CP', label: 'Complaints' },
+                { path: '/agencies', icon: 'AG', label: 'Agencies' }
             ]
         }
     ];
 
     return (
-        <div className="sidebar">
-            <div className="sidebar-header">
-                <div className="sidebar-logo">
-                    <div className="sidebar-logo-mark">SB</div>
-                    <div className="sidebar-logo-text">Safe<span>Bite</span></div>
-                </div>
-            </div>
-
-            <div className="sidebar-user-card">
-                <div className="sidebar-user-name">{user?.username}</div>
-                <div className="sidebar-user-role">
-                    <div className="sidebar-user-role-dot"></div>
-                    {user?.role}
-                </div>
-            </div>
-
-            <div className="sidebar-nav">
-                {navSections.map((section, idx) => (
-                    <div key={idx} className="sidebar-nav-section">
-                        <div className="sidebar-nav-section-label">{section.label}</div>
-                        {section.items.map(item => (
-                            <Link 
-                                key={item.path} 
-                                to={item.path} 
-                                className={`sidebar-nav-item ${location.pathname === item.path ? 'active' : ''}`}
-                            >
-                                <span className="sidebar-nav-item-icon">{item.icon}</span>
-                                {item.label}
-                            </Link>
-                        ))}
+        <>
+            <div className={`sidebar-overlay ${isOpen ? 'visible' : ''}`} onClick={onClose}></div>
+            <div className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+                <div className="sidebar-header">
+                    <div className="sidebar-logo">
+                        <div className="sidebar-logo-mark">SB</div>
+                        <div className="sidebar-logo-text">Safe<span>Bite</span></div>
                     </div>
-                ))}
-            </div>
+                </div>
 
-            <div className="sidebar-footer">
-                <button className="sidebar-logout-btn" onClick={onLogout}>
-                    Sign Out
-                </button>
+                <div className="sidebar-user-card">
+                    <div className="sidebar-user-name">{user?.username}</div>
+                    <div className="sidebar-user-role">
+                        <div className="sidebar-user-role-dot"></div>
+                        {user?.role}
+                    </div>
+                </div>
+
+                <div className="sidebar-nav">
+                    {navSections.map((section, idx) => (
+                        <div key={idx} className="sidebar-nav-section">
+                            <div className="sidebar-nav-section-label">{section.label}</div>
+                            {section.items.map(item => (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={onClose}
+                                    className={`sidebar-nav-item ${location.pathname === item.path ? 'active' : ''}`}
+                                >
+                                    <span className="sidebar-nav-item-icon">{item.icon}</span>
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="sidebar-footer">
+                    <div className="sidebar-theme-row">
+                        <span className="sidebar-theme-label">Theme</span>
+                        <ThemeToggle theme={theme} onToggle={onToggleTheme} compact />
+                    </div>
+                    <button className="sidebar-logout-btn" onClick={onLogout}>
+                        Sign Out
+                    </button>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

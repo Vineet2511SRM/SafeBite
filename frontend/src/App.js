@@ -5,15 +5,21 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Manufacturers from './components/Manufacturers';
 import Products from './components/Products';
+import Categories from './components/Categories';
+import Agencies from './components/Agencies';
 import Inspections from './components/Inspections';
 import Complaints from './components/Complaints';
 import Compliance from './components/Compliance';
 import Sidebar from './components/Sidebar';
 
+const THEME_STORAGE_KEY = 'safebite-theme';
+
 function App() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentView, setCurrentView] = useState('landing'); // 'landing', 'login', 'app'
+    const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'teal');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -24,16 +30,23 @@ function App() {
         setLoading(false);
     }, []);
 
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }, [theme]);
+
     const handleLogin = (userData) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         setCurrentView('app');
+        setIsSidebarOpen(false);
     };
 
     const handleLogout = () => {
         setUser(null);
         localStorage.removeItem('user');
         setCurrentView('landing');
+        setIsSidebarOpen(false);
     };
 
     const handleNavigateToLogin = () => {
@@ -42,6 +55,10 @@ function App() {
 
     const handleBackToLanding = () => {
         setCurrentView('landing');
+    };
+
+    const toggleTheme = () => {
+        setTheme((currentTheme) => (currentTheme === 'teal' ? 'blue' : 'teal'));
     };
 
     if (loading) {
@@ -65,7 +82,7 @@ function App() {
     }
 
     if (currentView === 'landing') {
-        return <Landing onNavigateToLogin={handleNavigateToLogin} />;
+        return <Landing onNavigateToLogin={handleNavigateToLogin} theme={theme} onToggleTheme={toggleTheme} />;
     }
 
     if (currentView === 'login') {
@@ -75,11 +92,26 @@ function App() {
     return (
         <Router>
             <div className="app-container">
-                <Sidebar onLogout={handleLogout} user={user} />
+                <button
+                    type="button"
+                    className="mobile-nav-trigger"
+                    onClick={() => setIsSidebarOpen((open) => !open)}
+                    aria-label="Toggle navigation"
+                >
+                    {isSidebarOpen ? 'Close' : 'Menu'}
+                </button>
+                <Sidebar
+                    onLogout={handleLogout}
+                    user={user}
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
+                />
                 <Routes>
                     <Route path="/" element={<Dashboard user={user} />} />
                     <Route path="/manufacturers" element={<Manufacturers user={user} />} />
                     <Route path="/products" element={<Products user={user} />} />
+                    <Route path="/categories" element={<Categories user={user} />} />
+                    <Route path="/agencies" element={<Agencies user={user} />} />
                     <Route path="/inspections" element={<Inspections user={user} />} />
                     <Route path="/complaints" element={<Complaints user={user} />} />
                     <Route path="/compliance" element={<Compliance user={user} />} />

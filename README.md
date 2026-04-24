@@ -82,7 +82,23 @@ A comprehensive web application for managing food quality inspections, manufactu
    npm start
    ```
 
-   The website and API will both run on <http://localhost:3000>
+   The backend API will run on <http://localhost:3000>
+
+### Run Frontend in Development
+
+1. Open another terminal and navigate to the frontend directory:
+
+   ```bash
+   cd frontend
+   ```
+
+2. Start the React app:
+
+   ```bash
+   npm start
+   ```
+
+   Open <http://localhost:3001> in your browser.
 
 ## API Endpoints
 
