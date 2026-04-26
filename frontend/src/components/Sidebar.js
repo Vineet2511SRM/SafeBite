@@ -70,10 +70,7 @@ const Sidebar = ({ onLogout, user, isOpen, onClose, theme, onToggleTheme }) => {
                 </div>
 
                 <div className="sidebar-footer">
-                    <div className="sidebar-theme-row">
-                        <span className="sidebar-theme-label">Theme</span>
-                        <ThemeToggle theme={theme} onToggle={onToggleTheme} compact />
-                    </div>
+                    
                     <button className="sidebar-logout-btn" onClick={onLogout}>
                         Sign Out
                     </button>

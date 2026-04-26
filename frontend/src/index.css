@@ -402,7 +402,7 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-} 
+}
 
 .landing-features {
     display: grid;
@@ -1067,11 +1067,25 @@ body {
     color: white;
 }
 
-.stat-card.teal .stat-card-icon { background: var(--primary); }
-.stat-card.green .stat-card-icon { background: var(--success); }
-.stat-card.blue .stat-card-icon { background: var(--info); }
-.stat-card.amber .stat-card-icon { background: var(--warning); }
-.stat-card.red .stat-card-icon { background: var(--danger); }
+.stat-card.teal .stat-card-icon {
+    background: var(--primary);
+}
+
+.stat-card.green .stat-card-icon {
+    background: var(--success);
+}
+
+.stat-card.blue .stat-card-icon {
+    background: var(--info);
+}
+
+.stat-card.amber .stat-card-icon {
+    background: var(--warning);
+}
+
+.stat-card.red .stat-card-icon {
+    background: var(--danger);
+}
 
 /* ============================================
    Dashboard Layout Elements
@@ -1148,9 +1162,10 @@ body {
     color: var(--text-secondary);
 }
 
-.dashboard-grid {
+.dashboard-grid,
+.mini-stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 24px;
     margin-bottom: 24px;
 }
@@ -1518,24 +1533,28 @@ body {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
     z-index: 100;
     display: flex;
-    justify-content: flex-end;
-    animation: fadeIn 0.2s ease both;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    animation: fadeIn 0.3s ease both;
 }
 
 .modal-panel {
     background: var(--surface);
     width: 100%;
-    max-width: 520px;
-    height: 100%;
+    max-width: 540px;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
-    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.15);
-    animation: fadeInLeft 0.3s ease both;
-    border-left: 1px solid var(--border);
+    box-shadow: var(--shadow-lg), 0 20px 50px rgba(0, 0, 0, 0.1);
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
 .modal-header {
@@ -1653,7 +1672,7 @@ body {
 
 :root[data-theme='blue'] .modal-panel {
     background: #1E293B;
-    border-left-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 :root[data-theme='blue'] .modal-header,
